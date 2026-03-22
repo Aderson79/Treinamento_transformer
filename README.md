@@ -1,59 +1,89 @@
-Laboratório 05: Treinamento Fim-a-Fim do Transformer
+# Laboratório 05 — Treinamento Fim-a-Fim do Transformer (EN → DE)
 
-Este repositório contém a conclusão da Unidade I, focada na implementação, integração e treinamento de uma arquitetura Transformer para tradução de texto (Inglês -> Alemão), utilizando o dataset multi30k.
+Este repositório contém a conclusão da **Unidade I**, com a **implementação, integração e treinamento** de uma arquitetura **Transformer** para **tradução de texto (Inglês → Alemão)** usando o dataset **multi30k**.
 
-🚀 Visão Geral do Projeto
+O foco do laboratório é evoluir os componentes matemáticos do **Laboratório 04** (isolados e testados com pesos estáticos/aleatórios) para um **pipeline completo de treinamento**, onde o modelo **aprende via Backpropagation** com o otimizador **Adam**.
 
-O objetivo deste laboratório foi evoluir os componentes matemáticos isolados desenvolvidos no Laboratório 04 para um pipeline de treinamento completo e funcional.
+---
 
-Diferente dos laboratórios anteriores, onde os pesos eram estáticos ou gerados aleatoriamente via NumPy para teste, aqui o modelo aprende através de Backpropagation e do otimizador Adam.
+## Visão Geral
 
-🛠️ Mudanças e Adaptações (Lab 04 -> Lab 05)
+Neste laboratório, o Transformer é treinado de ponta a ponta, cobrindo:
 
-Para cumprir os requisitos de treinamento, foram necessárias as seguintes adaptações:
+- Pipeline de dados (download, tokenização e criação de tensores)
+- Forward pass Encoder/Decoder com máscaras apropriadas
+- Treinamento por múltiplas épocas com otimização
+- Inferência auto-regressiva (token a token) após o treino
 
-Migração para PyTorch: As funções originais em NumPy foram refatoradas para classes que herdam de torch.nn.Module. Isso foi indispensável para permitir o cálculo automático de gradientes (autograd) e o uso de GPU.
+---
 
-Gerenciamento de Pesos: O sistema de _weight_cache (dicionários manuais de pesos) do Lab 04 foi substituído por camadas nn.Linear e nn.Embedding.
+## Mudanças e Adaptações (Lab 04 → Lab 05)
 
-Máscara de Atenção Causal: A lógica de máscara de "olhar para frente" (Look-ahead mask) foi integrada ao Forward Pass do Decoder para garantir que o modelo não tenha acesso a tokens futuros durante o treino.
+Para atender aos requisitos de treinamento, as principais alterações foram:
 
-Loop Auto-regressivo: A lógica de inferência foi adaptada para gerar traduções token a token após o treinamento.
+### 1) Migração para PyTorch
+As funções em NumPy foram refatoradas para **classes que herdam de `torch.nn.Module`**, permitindo:
 
-🤖 Créditos e Ferramentas de IA
+- Cálculo automático de gradientes (**autograd**)
+- Treinamento em GPU (quando disponível)
+- Organização modular do modelo
 
-Seguindo as diretrizes do contrato pedagógico:
+### 2) Gerenciamento de Pesos
+O sistema manual de pesos (ex.: dicionários tipo `_weight_cache`) foi substituído por camadas do PyTorch, como:
 
-Preparação de Dados e Tokenização: Foi utilizada Inteligência Artificial (Gemini/ChatGPT) para auxiliar na integração com a biblioteca datasets do Hugging Face e na configuração do AutoTokenizer (modelo bert-base-multilingual-cased). Isso permitiu agilizar a transformação de texto bruto em tensores compatíveis com o modelo.
+- `nn.Linear`
+- `nn.Embedding`
 
-Adaptação Pytorch: IA foi utilizada como suporte consultivo para converter as operações de matrizes do NumPy para as operações equivalentes em tensores do PyTorch, garantindo a integridade do fluxo dos gradientes.
+Isso garante parâmetros treináveis e integração direta com o otimizador.
 
-📋 Requisitos de Sistema
+### 3) Máscara de Atenção Causal (Look-ahead mask)
+A máscara de “olhar para frente” foi incorporada ao **forward do Decoder**, garantindo que o modelo **não acesse tokens futuros** durante o treinamento (comportamento auto-regressivo correto).
 
-Para rodar este laboratório, você precisará de:
+### 4) Loop de Inferência Auto-regressivo
+A inferência foi adaptada para gerar a tradução **token a token**, usando a saída anterior como entrada do próximo passo.
 
-Python 3.8 ou superior.
+---
 
-Bibliotecas listadas abaixo (instale via terminal):
+## Créditos e Ferramentas de IA
 
+Seguindo as diretrizes do contrato pedagógico, Inteligência Artificial (Gemini/ChatGPT) foi utilizada como **suporte** em:
+
+- **Preparação de dados e tokenização**: integração com `datasets` (Hugging Face) e configuração do `AutoTokenizer` (modelo `bert-base-multilingual-cased`), agilizando a conversão de texto bruto para tensores.
+- **Adaptação para PyTorch**: apoio consultivo para converter operações matriciais do NumPy em operações equivalentes com tensores PyTorch, preservando o fluxo de gradientes.
+
+> Observação: a IA foi utilizada como ferramenta de apoio (consultiva), e o entendimento/validação do funcionamento do pipeline e do modelo permaneceu responsabilidade do autor do laboratório.
+
+---
+
+## Requisitos de Sistema
+
+- **Python 3.8+**
+- Dependências:
+
+```bash
 pip install torch datasets transformers numpy
+```
 
+---
 
-🏃 Como Rodar o Laboratório
+## Como Rodar
 
-Clone o repositório e garanta que todos os arquivos .py estejam na mesma pasta.
+1. Clone o repositório e garanta que todos os arquivos `.py` estejam na mesma pasta.
+2. Execute o script principal:
 
-Execute o script principal:
-
+```bash
 python inferencia.py
+```
 
+---
 
-O que esperar:
+## O que esperar ao executar
 
-O script baixará automaticamente o dataset multi30k e o tokenizador.
+Ao rodar o script:
 
-Iniciará um treinamento de 20 épocas em um subconjunto de 1000 frases.
+- O dataset **multi30k** e o tokenizador serão baixados automaticamente (quando necessário).
+- Será iniciado um treinamento de **20 épocas** em um subconjunto de **1000 frases**.
+- Você verá a **loss** diminuir a cada época (tendência de convergência).
+- Ao final, o modelo tentará gerar uma tradução de uma frase do conjunto de treino para validar a integridade estrutural do pipeline.
 
-Você verá o valor da Loss (perda) cair a cada época, indicando convergência.
-
-Ao final, o modelo tentará "vomitar" (traduzir por memorização) uma frase do conjunto de treino para provar a integridade estrutural.
+---
